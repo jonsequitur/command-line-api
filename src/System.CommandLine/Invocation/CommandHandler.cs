@@ -282,6 +282,34 @@ namespace System.CommandLine.Invocation
             Func<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, Task<int>> action) =>
             HandlerDescriptor.FromDelegate(action).GetCommandHandler();
 
+        public static ICommandHandler Create<T1, T2, T3>(
+            IValueDescriptor<T1> symbol1,
+            IValueDescriptor<T2> symbol2,
+            IValueDescriptor<T3> symbol3,
+            Func<T1, T2, T3, Task> handle)
+        {
+            return new AnonymousCommandHandler(async context =>
+            {
+                await handle(
+                    context.ParseResult.ValueFor(symbol1),
+                    context.ParseResult.ValueFor(symbol2), 
+                    context.ParseResult.ValueFor(symbol3));
+            });
+        }
+
+        private class AnonymousCommandHandler : ICommandHandler
+        {
+            private readonly Func<InvocationContext, Task> _getResult;
+
+            public AnonymousCommandHandler(Func<InvocationContext, Task> getResult)
+            {
+                _getResult = getResult;
+            }
+
+            public async Task<int> InvokeAsync(InvocationContext context) =>
+                await GetExitCodeAsync(_getResult(context), context);
+        }
+
         internal static async Task<int> GetExitCodeAsync(object value, InvocationContext context)
         {
             switch (value)

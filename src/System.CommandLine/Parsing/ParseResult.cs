@@ -161,24 +161,16 @@ namespace System.CommandLine.Parsing
 
             return (T)Binder.GetDefaultValue(option.Argument.ArgumentType);
         }
+     
+        internal T ValueFor<T>(IValueDescriptor<T> symbol) =>
+            symbol switch
+            {
+                Argument<T> argument => ValueForArgument(argument),
+                Option<T> option => ValueForOption(option),
+                _ => throw new ArgumentOutOfRangeException()
+            };
 
-        [return: MaybeNull]
-        public T ValueForOption<T>(string alias)
-        {
-            if (string.IsNullOrWhiteSpace(alias))
-            {
-                throw new ArgumentException("Value cannot be null or whitespace.", nameof(alias));
-            }
-
-            if (CommandResult.Children.GetByAlias(alias) is OptionResult optionResult)
-            {
-                return optionResult.GetValueOrDefault<T>();
-            }
-            else
-            {
-                return default;
-            }
-        }
+        public SymbolResult? this[string alias] => CommandResult.Children[alias];
 
         public override string ToString() => $"{nameof(ParseResult)}: {this.Diagram()}";
 

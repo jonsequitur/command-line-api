@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.CommandLine.Binding;
 using System.CommandLine.Invocation;
 using System.CommandLine.IO;
+using System.CommandLine.Parsing;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -489,6 +490,46 @@ namespace System.CommandLine.Tests.Binding
             boundValue.Should().BeOfType(c.ParameterType);
 
             c.AssertBoundValue(boundValue);
+        }
+        
+        [Fact]
+        public void EXPERIMENT()
+        {
+            var stringOption = new Option<string>("--string");
+            var intOption = new Option<int>("--int");
+            var filesArg = new Argument<FileInfo[]>();
+            var wasCalled = false;
+            var command = new RootCommand
+            {
+                stringOption,
+                intOption,
+                filesArg
+            };
+
+            command.Handler = CommandHandler.Create(
+                stringOption, intOption, filesArg,
+                (s, i, fs) =>
+                {
+                    wasCalled = true;
+            
+                    s.Should().Be("hello");
+                    i.Should().Be(123);
+                    fs.Select(f => f.Name)
+                      .Should()
+                      .BeEquivalentTo(
+                          "1.txt",
+                          "2.txt",
+                          "3.txt"
+                      );
+
+                    return Task.CompletedTask;
+                });
+
+            var parser = new Parser(command);
+
+            parser.Invoke("--int 123 --string hello 1.txt 2.txt 3.txt");
+
+            wasCalled.Should().BeTrue();
         }
 
         private static void CaptureMethod<T>(T value, InvocationContext invocationContext)
