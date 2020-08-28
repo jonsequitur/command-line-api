@@ -291,9 +291,9 @@ namespace System.CommandLine.Invocation
             return new AnonymousCommandHandler(async context =>
             {
                 await handle(
-                    context.ParseResult.ValueFor(symbol1),
-                    context.ParseResult.ValueFor(symbol2), 
-                    context.ParseResult.ValueFor(symbol3));
+                    context.ParseResult.ValueFor(symbol1)!,
+                    context.ParseResult.ValueFor(symbol2)!, 
+                    context.ParseResult.ValueFor(symbol3)!);
             });
         }
 
