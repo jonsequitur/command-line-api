@@ -7,7 +7,7 @@ namespace System.CommandLine
 {
     public interface IIdentifierSymbol : ISymbol
     {
-        IReadOnlyCollection<string> Aliases { get; }
+        IReadOnlyList<string> Aliases { get; }
 
         bool HasAlias(string alias);
     }

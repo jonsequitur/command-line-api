@@ -545,7 +545,7 @@ namespace System.CommandLine.Parsing
 
             for (var commandAliasIndex = 0; commandAliasIndex < command.Aliases.Count; commandAliasIndex++)
             {
-                var commandAlias = command.Aliases.ElementAt(commandAliasIndex);
+                var commandAlias = command.Aliases[commandAliasIndex];
 
                 tokens.Add(
                     commandAlias,
@@ -558,16 +558,18 @@ namespace System.CommandLine.Parsing
                 {
                     if (command.Children[childIndex] is IIdentifierSymbol identifier)
                     {
-                        foreach (var childAlias in identifier.Aliases)
+                        for (var aliasIndex = 0; aliasIndex < identifier.Aliases.Count; aliasIndex++)
                         {
+                            var alias = identifier.Aliases[aliasIndex];
+
                             switch (identifier)
                             {
                                 case ICommand _:
-                                    tokens.TryAdd(childAlias, new Token(childAlias, TokenType.Command, -1));
+                                    tokens.TryAdd(alias, new Token(alias, TokenType.Command, -1));
                                     break;
 
                                 case IOption _:
-                                    tokens.TryAdd(childAlias, new Token(childAlias, TokenType.Option, -1));
+                                    tokens.TryAdd(alias, new Token(alias, TokenType.Option, -1));
                                     break;
                             }
                         }

@@ -52,13 +52,16 @@ namespace System.CommandLine.Collections
         {
             Items.Remove(item);
 
-            foreach (var alias in GetAliases(item))
+            var list = GetAliases(item);
+
+            for (var i = 0; i < list.Count; i++)
             {
+                var alias = list[i];
                 ItemsByAlias.Remove(alias);
             }
         }
 
-        protected abstract IReadOnlyCollection<string> GetAliases(T item);
+        protected abstract IReadOnlyList<string> GetAliases(T item);
 
         public T this[int index] => Items[index];
 

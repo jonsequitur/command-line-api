@@ -21,7 +21,7 @@ namespace System.CommandLine
             Description = description;
         }
 
-        public IReadOnlyCollection<string> Aliases => _aliases;
+        public IReadOnlyList<string> Aliases => _aliases;
 
         public override string Name
         {

@@ -81,9 +81,11 @@ namespace System.CommandLine
                 switch (child)
                 {
                     case IIdentifierSymbol identifier when !child.IsHidden:
-                        foreach (var alias in identifier.Aliases)
+                        for (var aliasIndex = 0; aliasIndex < identifier.Aliases.Count; aliasIndex++)
                         {
-                            if (alias is { } suggestion && 
+                            var alias = identifier.Aliases[aliasIndex];
+
+                            if (alias is { } suggestion &&
                                 suggestion.ContainsCaseInsensitive(textToMatch))
                             {
                                 suggestions.Add(suggestion);

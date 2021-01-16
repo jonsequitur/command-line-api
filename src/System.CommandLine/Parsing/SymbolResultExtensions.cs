@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Collections.Generic;
-using System.Linq;
 
 namespace System.CommandLine.Parsing
 {
@@ -34,7 +33,17 @@ namespace System.CommandLine.Parsing
             {
                 var optionName = option.Name;
 
-                var defaultAlias = option.Aliases.First(alias => alias.RemovePrefix() == optionName);
+                string defaultAlias = null;
+
+                for (var i = 0; i < option.Aliases.Count; i++)
+                {
+                    var alias = option.Aliases[i];
+
+                    if (alias.RemovePrefix().Equals(optionName, StringComparison.Ordinal))
+                    {
+                        defaultAlias = alias;
+                    }
+                }
 
                 return new ImplicitToken(defaultAlias, TokenType.Option);
             }

@@ -110,10 +110,31 @@ namespace System.CommandLine
 
         object? IValueDescriptor.GetDefaultValue() => Argument.GetDefaultValue();
 
-        private protected override string DefaultName =>
-            _implicitName ??= Aliases
-                              .OrderBy(a => a.Length)
-                              .Last()
-                              .RemovePrefix();
+        private protected override string DefaultName
+        {
+            get
+            {
+                if (_implicitName == null)
+                {
+                    var longestLength = 0;
+                    var indexOfLongestAlias = 0;
+
+                    for (var i = 0; i < Aliases.Count; i++)
+                    {
+                        var alias = Aliases[i];
+
+                        if (alias.Length > longestLength)
+                        {
+                            indexOfLongestAlias = i;
+                            longestLength = alias.Length;
+                        }
+                    }
+
+                    _implicitName = Aliases[indexOfLongestAlias].RemovePrefix();
+                }
+
+                return _implicitName;
+            }
+        }
     }
 }

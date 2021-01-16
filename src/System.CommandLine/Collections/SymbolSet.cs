@@ -66,9 +66,9 @@ namespace System.CommandLine.Collections
 
             if (item is IIdentifierSymbol identifier)
             {
-                var aliases = identifier.Aliases.ToArray();
+                var aliases = identifier.Aliases;
 
-                for (var i = 0; i < aliases.Length; i++)
+                for (var i = 0; i < aliases.Count; i++)
                 {
                     var alias = aliases[i];
 
@@ -105,7 +105,7 @@ namespace System.CommandLine.Collections
             }
         }
 
-        protected override IReadOnlyCollection<string> GetAliases(ISymbol item) =>
+        protected override IReadOnlyList<string> GetAliases(ISymbol item) =>
             item switch
             {
                 IIdentifierSymbol named => named.Aliases,
