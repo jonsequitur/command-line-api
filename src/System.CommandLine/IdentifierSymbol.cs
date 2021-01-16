@@ -7,7 +7,7 @@ namespace System.CommandLine
 {
     public abstract class IdentifierSymbol : Symbol, IIdentifierSymbol
     {
-        private readonly HashSet<string> _aliases = new HashSet<string>();
+        private readonly StringSet _aliases = new StringSet();
         private string? _specifiedName;
 
         protected IdentifierSymbol(string? description = null)
