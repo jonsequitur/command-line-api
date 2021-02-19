@@ -6,7 +6,7 @@ using System.CommandLine.Parsing;
 
 namespace System.CommandLine
 {
-    ///<inheritdoc/>
+    /// <inheritdoc cref="Argument" />
     public class Argument<T> : Argument, IValueDescriptor<T>
     {
         /// <summary>

@@ -161,7 +161,8 @@ namespace System.CommandLine.Parsing
 
             return (T)Binder.GetDefaultValue(option.Argument.ArgumentType);
         }
-     
+
+        [return: MaybeNull]
         internal T ValueFor<T>(IValueDescriptor<T> symbol) =>
             symbol switch
             {
@@ -170,7 +171,7 @@ namespace System.CommandLine.Parsing
                 _ => throw new ArgumentOutOfRangeException()
             };
 
-        public SymbolResult? this[string alias] => CommandResult.Children[alias];
+        public SymbolResult? this[string alias] => CommandResult.Children.GetByAlias(alias);
 
         public override string ToString() => $"{nameof(ParseResult)}: {this.Diagram()}";
 
