@@ -451,25 +451,26 @@ namespace System.CommandLine.Tests
             [Fact]
             public void When_argument_cannot_be_parsed_as_the_specified_type_then_getting_value_throws()
             {
+                var option = new Option<int>(new[] { "-o", "--one" }, argumentResult =>
+                {
+                    if (int.TryParse(argumentResult.Tokens.Select(t => t.Value).Single(), out var value))
+                    {
+                        return value;
+                    }
+
+                    argumentResult.ErrorMessage = $"'{argumentResult.Tokens.Single().Value}' is not an integer";
+
+                    return default;
+                });
                 var command = new Command("the-command")
                 {
-                    new Option<int>(new[] { "-o", "--one" }, argumentResult =>
-                        {
-                            if (int.TryParse(argumentResult.Tokens.Select(t => t.Value).Single(), out var value))
-                            {
-                                return value;
-                            }
-
-                            argumentResult.ErrorMessage = $"'{argumentResult.Tokens.Single().Value}' is not an integer";
-
-                            return default;
-                        })
+                    option
                 };
 
                 var result = command.Parse("the-command -o not-an-int");
 
                 Action getValue = () =>
-                    result.ValueForOption("-o");
+                    result.ValueForOption(option);
 
                 getValue.Should()
                         .Throw<InvalidOperationException>()

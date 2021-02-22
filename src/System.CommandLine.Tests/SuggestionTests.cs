@@ -171,12 +171,13 @@ namespace System.CommandLine.Tests
         [Fact]
         public void Command_Getsuggestions_can_access_ParseResult()
         {
+            var originOption = new Option<string>("--origin");
             var parser = new Parser(
-                new Option<string>("--origin"),
+                originOption,
                 new Option<string>("--clone")
                 .AddSuggestions((parseResult, match) =>
                 {
-                    var opt1Value = parseResult?.ValueForOption<string>("--origin");
+                    var opt1Value = parseResult?.ValueForOption(originOption);
                     return opt1Value != null ? new[] { opt1Value } : Array.Empty<string>();
                 }));
 
@@ -192,12 +193,13 @@ namespace System.CommandLine.Tests
         [Fact]
         public void Command_Getsuggestions_can_access_ParseResult_reverse_order()
         {
+            var originOption = new Option<string>("--origin");
             var parser = new Parser(
-                new Option<string>("--origin"),
+                originOption,
                 new Option<string>("--clone")
                 .AddSuggestions((parseResult, match) =>
                 {
-                    var opt1Value = parseResult?.ValueForOption<string>("--origin");
+                    var opt1Value = parseResult?.ValueForOption(originOption);
                     return opt1Value != null ? new[] { opt1Value } : Array.Empty<string>();
                 }));
 

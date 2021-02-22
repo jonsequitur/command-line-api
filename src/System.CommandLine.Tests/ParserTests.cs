@@ -1134,14 +1134,15 @@ namespace System.CommandLine.Tests
         [Fact]
         public void Commands_can_have_default_argument_values()
         {
+            var argument = new Argument<string>("the-arg", () => "default");
             var command = new Command("command")
             {
-                new Argument<string>("the-arg", () => "default")
+                argument
             };
 
             ParseResult result = command.Parse("command");
 
-            result.ValueForArgument("the-arg")
+            result.ValueForArgument(argument)
                   .Should()
                   .Be("default");
         }
@@ -1149,16 +1150,16 @@ namespace System.CommandLine.Tests
         [Fact]
         public void When_an_option_with_a_default_value_is_not_matched_then_the_option_can_still_be_accessed_as_though_it_had_been_applied()
         {
-            var command = new Command("command");
-            command.AddOption(
-                new Option<string>(new[] { "-o", "--option" }, () => "the-default"));
+            var option = new Option<string>(new[] { "-o", "--option" }, () => "the-default");
+            var command = new Command("command")
+            {
+                option
+            };
 
             ParseResult result = command.Parse("command");
 
-            result.HasOption("-o").Should().BeTrue();
-            result.HasOption("--option").Should().BeTrue();
-            result.ValueForOption<string>("-o").Should().Be("the-default");
-            result.ValueForOption("-o").Should().Be("the-default");
+            result.HasOption(option).Should().BeTrue();
+            result.ValueForOption(option).Should().Be("the-default");
         }
 
         [Fact]
@@ -1221,17 +1222,15 @@ namespace System.CommandLine.Tests
         [Fact]
         public void Command_default_argument_value_does_not_override_parsed_value()
         {
+            var argument = new Argument<DirectoryInfo>(() => new DirectoryInfo(Directory.GetCurrentDirectory()));
             var command = new Command("inner")
             {
-                new Argument<DirectoryInfo>(() => new DirectoryInfo(Directory.GetCurrentDirectory()))
-                {
-                    Name = "the-arg"
-                }
+                argument
             };
 
             var result = command.Parse("the-directory");
 
-            result.ValueForArgument<DirectoryInfo>("the-arg")
+            result.ValueForArgument(argument)
                   .Name
                   .Should()
                   .Be("the-directory");
@@ -1380,15 +1379,16 @@ namespace System.CommandLine.Tests
         [InlineData("-x:-y")]
         public void Arguments_can_start_with_prefixes_that_make_them_look_like_options(string input)
         {
+            var x = new Option("-x", arity: ArgumentArity.ZeroOrOne);
             var command = new Command("command")
             {
-                new Option("-x", arity: ArgumentArity.ZeroOrOne),
+                x,
                 new Option("-z", arity: ArgumentArity.ZeroOrOne)
             };
 
             var result = command.Parse(input);
 
-            var valueForOption = result.ValueForOption("-x");
+            var valueForOption = result.ValueForOption(x);
 
             valueForOption.Should().Be("-y");
         }
@@ -1398,15 +1398,17 @@ namespace System.CommandLine.Tests
         [InlineData("-x:-y")]
         public void Arguments_can_match_the_aliases_of_sibling_options(string input)
         {
+            var optionX = new Option("-x", arity: ArgumentArity.ZeroOrOne);
+            var optionY = new Option("-y", arity: ArgumentArity.ZeroOrOne);
             var command = new Command("command")
             {
-                new Option("-x", arity: ArgumentArity.ZeroOrOne),
-                new Option("-y", arity: ArgumentArity.ZeroOrOne)
+                optionX,
+                optionY
             };
 
             var result = command.Parse(input);
 
-            var valueForOption = result.ValueForOption("-x");
+            var valueForOption = result.ValueForOption(optionX);
 
             valueForOption.Should().Be("-y");
         }
@@ -1442,14 +1444,15 @@ namespace System.CommandLine.Tests
         [Fact]
         public void Boolean_options_with_no_argument_specified_do_not_match_subsequent_arguments()
         {
+            var option = new Option<bool>("-v");
             var command = new Command("command")
             {
-                new Option<bool>("-v")
+                option
             };
 
             var result = command.Parse("-v an-argument");
 
-            result.ValueForOption("-v").Should().Be(true);
+            result.ValueForOption(option).Should().Be(true);
         }
 
         [Fact]
@@ -1459,13 +1462,15 @@ namespace System.CommandLine.Tests
             {
                 TreatUnmatchedTokensAsErrors = false
             };
-            command.AddOption(new Option("-x", arity: ArgumentArity.ExactlyOne));
-            command.AddOption(new Option("-y", arity: ArgumentArity.ExactlyOne));
+            var optionX = new Option("-x", arity: ArgumentArity.ExactlyOne);
+            var optionY = new Option("-y", arity: ArgumentArity.ExactlyOne);
+            command.AddOption(optionX);
+            command.AddOption(optionY);
 
             var result = command.Parse("-x 23 unmatched-token -y 42");
 
-            result.ValueForOption("-x").Should().Be("23");
-            result.ValueForOption("-y").Should().Be("42");
+            result.ValueForOption(optionX).Should().Be("23");
+            result.ValueForOption(optionY).Should().Be("42");
             result.UnmatchedTokens.Should().BeEquivalentTo("unmatched-token");
         }
 

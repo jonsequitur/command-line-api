@@ -84,17 +84,11 @@ namespace System.CommandLine.Parsing
 
         public IReadOnlyList<string> UnparsedTokens => _unparsedTokens.Select(t => t.Value).ToArray();
 
-        public object? ValueForOption(string alias) =>
-            ValueForOption<object?>(alias);
-        
+        public object? ValueForArgument(Argument argument) =>
+            ValueForArgument<object?>(argument);
+
         public object? ValueForOption(Option option) =>
             ValueForOption<object?>(option);
-
-        public object? ValueForArgument(string alias) =>
-            ValueForArgument<object?>(alias);
-
-         public object? ValueForArgument(Argument argument) =>
-            ValueForArgument<object?>(argument);
 
         [return: MaybeNull]
         public T ValueForArgument<T>(Argument<T> argument)
@@ -121,24 +115,6 @@ namespace System.CommandLine.Parsing
         }
 
         [return: MaybeNull]
-        public T ValueForArgument<T>(string name)
-        {
-            if (string.IsNullOrWhiteSpace(name))
-            {
-                throw new ArgumentException("Value cannot be null or whitespace.", nameof(name));
-            }
-
-            if (CommandResult.Children.GetByAlias(name) is ArgumentResult argumentResult)
-            {
-                return argumentResult.GetValueOrDefault<T>();
-            }
-            else
-            {
-                return default;
-            }
-        }
-
-        [return: MaybeNull]
         public T ValueForOption<T>(Option<T> option)
         {
             if (FindResultFor(option) is { } result &&
@@ -147,7 +123,7 @@ namespace System.CommandLine.Parsing
                 return t;
             }
 
-            return (T)Binder.GetDefaultValue(option.Argument.ArgumentType);
+            return (T)Binder.GetDefaultValue(typeof(T));
         }
 
         [return: MaybeNull]
@@ -159,7 +135,7 @@ namespace System.CommandLine.Parsing
                 return t;
             }
 
-            return (T)Binder.GetDefaultValue(option.Argument.ArgumentType);
+            return (T)Binder.GetDefaultValue(typeof(T));
         }
 
         [return: MaybeNull]
@@ -170,8 +146,6 @@ namespace System.CommandLine.Parsing
                 Option<T> option => ValueForOption(option),
                 _ => throw new ArgumentOutOfRangeException()
             };
-
-        public SymbolResult? this[string alias] => CommandResult.Children.GetByAlias(alias);
 
         public override string ToString() => $"{nameof(ParseResult)}: {this.Diagram()}";
 

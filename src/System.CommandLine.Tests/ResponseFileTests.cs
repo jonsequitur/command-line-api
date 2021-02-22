@@ -58,15 +58,18 @@ namespace System.CommandLine.Tests
                 "--flag2",
                 "123");
 
+            var option1 = new Option("--flag");
+            var option2 = new Option<int>("--flag2");
+
             var result = new RootCommand
                          {
-                             new Option("--flag"),
-                             new Option<int>("--flag2")
+                             option1,
+                             option2
                          }
                 .Parse($"@{responseFile}");
 
-            result.HasOption("--flag").Should().BeTrue();
-            result.ValueForOption("--flag2").Should().Be(123);
+            result.HasOption(option1).Should().BeTrue();
+            result.ValueForOption(option2).Should().Be(123);
             result.Errors.Should().BeEmpty();
         }
 
@@ -168,12 +171,15 @@ namespace System.CommandLine.Tests
                 "",
                 "123");
 
-            var result = new CommandLineBuilder()
-                         .AddOption(new Option<int>("--flag"))
-                         .Build()
-                         .Parse($"@{responseFile}");
+            var option = new Option<int>("--flag");
 
-            result.ValueForOption("--flag").Should().Be(123);
+            var result = new RootCommand
+                {
+                    option
+                }
+                .Parse($"@{responseFile}");
+
+            result.ValueForOption(option).Should().Be(123);
             result.Errors.Should().BeEmpty();
         }
 
@@ -262,10 +268,12 @@ namespace System.CommandLine.Tests
         {
             var responseFile = ResponseFile(input);
 
+            var option1 = new Option<string>("--flag");
+            var option2 = new Option<int>("--flag2");
             var rootCommand = new RootCommand
             {
-                new Option<string>("--flag"),
-                new Option<int>("--flag2")
+                option1,
+                option2
             };
             var parser = new CommandLineBuilder(rootCommand)
                          .ParseResponseFileAs(ResponseFileHandling.ParseArgsAsSpaceSeparated)
@@ -273,8 +281,8 @@ namespace System.CommandLine.Tests
 
             var result = parser.Parse($"@{responseFile}");
 
-            result.ValueForOption("--flag").Should().Be("first value");
-            result.ValueForOption("--flag2").Should().Be(123);
+            result.ValueForOption(option1).Should().Be("first value");
+            result.ValueForOption(option2).Should().Be(123);
         }
 
         [Fact]
@@ -334,8 +342,8 @@ namespace System.CommandLine.Tests
             var option2 = new Option<int>("--option2");
 
             var result = new RootCommand { option1, option2 }.Parse($"@{responseFile}");
-            result.ValueForOption("--option1").Should().Be("value1");
-            result.ValueForOption("--option2").Should().Be(2);
+            result.ValueForOption(option1).Should().Be("value1");
+            result.ValueForOption(option2).Should().Be(2);
         }
 
         [Fact]
@@ -347,8 +355,8 @@ namespace System.CommandLine.Tests
             var option2 = new Option<int>("--option2");
 
             var result = new RootCommand { option1, option2 }.Parse($"@{responseFile}");
-            result.ValueForOption("--option1").Should().Be("value1");
-            result.ValueForOption("--option2").Should().Be(2);
+            result.ValueForOption(option1).Should().Be("value1");
+            result.ValueForOption(option2).Should().Be(2);
             result.Errors.Should().BeEmpty();
         }
 
@@ -361,8 +369,8 @@ namespace System.CommandLine.Tests
             var option2 = new Option<int>("--option2");
 
             var result = new RootCommand { option1, option2 }.Parse($"@{responseFile}");
-            result.ValueForOption("--option1").Should().Be("value1");
-            result.ValueForOption("--option2").Should().Be(2);
+            result.ValueForOption(option1).Should().Be("value1");
+            result.ValueForOption(option2).Should().Be(2);
             result.Errors.Should().BeEmpty();
         }
     }
