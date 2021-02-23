@@ -55,13 +55,18 @@ namespace System.CommandLine
                 AddAlias(alias);
             }
 
+            argument ??= CreateArgument();
+
             if (argument != null)
             {
                 AddArgumentInner(argument);
             }
         }
 
-        private static Argument? CreateArgument(Type? argumentType, Func<object?>? getDefaultValue, IArgumentArity? arity)
+        private static Argument? CreateArgument(
+            Type? argumentType = null, 
+            Func<object?>? getDefaultValue = null, 
+            IArgumentArity? arity = null)
         {
             if (argumentType is null &&
                 getDefaultValue is null &&

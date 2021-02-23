@@ -75,15 +75,10 @@ namespace System.CommandLine
         /// <param name="isDefault"><c>true</c> to use the <paramref name="parse"/> result as default value.</param>
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="parse"/> is null.</exception>
         public Argument(
-            string? name,
+            string name,
             ParseArgument<T> parse, 
-            bool isDefault = false) : this()
+            bool isDefault = false) : this(name)
         {
-            if (!string.IsNullOrWhiteSpace(name))
-            {
-                Name = name!;
-            }
-
             if (parse is null)
             {
                 throw new ArgumentNullException(nameof(parse));
@@ -116,7 +111,7 @@ namespace System.CommandLine
         /// </summary>
         /// <param name="parse">A custom argument parser.</param>
         /// <param name="isDefault"><c>true</c> to use the <paramref name="parse"/> result as default value.</param>
-        public Argument(ParseArgument<T> parse, bool isDefault = false) : this(null, parse, isDefault)
+        public Argument(ParseArgument<T> parse, bool isDefault = false) : this("", parse, isDefault)
         {
         }
     }

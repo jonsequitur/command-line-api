@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.CommandLine.IO;
 using System.CommandLine.Parsing;
 using System.Linq;
-using System.Text.RegularExpressions;
 using static System.CommandLine.Help.DefaultHelpText;
 
 namespace System.CommandLine.Help
@@ -195,11 +194,6 @@ namespace System.CommandLine.Help
         /// <exception cref="ArgumentNullException"></exception>
         private void AppendDescription(string description)
         {
-            if (description is null)
-            {
-                throw new ArgumentNullException(nameof(description));
-            }
-
             var availableWidth = GetAvailableWidth();
             var descriptionLines = SplitText(description, availableWidth);
 
@@ -389,7 +383,6 @@ namespace System.CommandLine.Help
                 throw new ArgumentOutOfRangeException(nameof(width), $"{nameof(width)} must be non-negative.");
             }
 
-
             if (width == 0)
             {
                 return Array.Empty<string>();
@@ -503,7 +496,7 @@ namespace System.CommandLine.Help
                 var argument = arguments[i];
                 if (ShouldShowHelp(argument))
                 {
-                    var argumentDescriptor = ArgumentDescriptor(argument);
+                    var argumentDescriptor = ArgumentDescriptor(argument, symbol);
 
                     var invocation = string.IsNullOrWhiteSpace(argumentDescriptor)
                                          ? ""
@@ -524,7 +517,7 @@ namespace System.CommandLine.Help
             }
         }
 
-        protected virtual string ArgumentDescriptor(IArgument argument)
+        protected virtual string ArgumentDescriptor(IArgument argument, ISymbol parent)
         {
             if (argument.ValueType == typeof(bool) ||
                 argument.ValueType == typeof(bool?))
@@ -536,6 +529,12 @@ namespace System.CommandLine.Help
             if (suggestions.Length > 0)
             {
                 return string.Join("|", suggestions);
+            }
+
+            if (parent is IOption option && 
+                string.IsNullOrEmpty(argument.Name))
+            {
+                 return option.Name;
             }
 
             return argument.Name;
@@ -568,7 +567,7 @@ namespace System.CommandLine.Help
                 {
                     if (ShouldShowHelp(argument))
                     {
-                        var argumentDescriptor = ArgumentDescriptor(argument);
+                        var argumentDescriptor = ArgumentDescriptor(argument, symbol);
                         if (!string.IsNullOrWhiteSpace(argumentDescriptor))
                         {
                             invocation = $"{invocation} <{argumentDescriptor}>";
@@ -818,15 +817,8 @@ namespace System.CommandLine.Help
             HelpSection.WriteHeading(this, AdditionalArguments.Title, AdditionalArguments.Description);
         }
 
-        private bool ShouldDisplayArgumentHelp(ICommand? command)
-        {
-            if (command is null)
-            {
-                return false;
-            }
-
-            return command.Arguments.Any(ShouldShowHelp);
-        }
+        private bool ShouldDisplayArgumentHelp(ICommand command) => 
+            command.Arguments.Any(ShouldShowHelp);
 
         private int GetConsoleWindowWidth(IConsole console)
         {
@@ -838,11 +830,6 @@ namespace System.CommandLine.Help
             {
                 return int.MaxValue;
             }
-        }
-
-        private static string ShortenWhitespace(string input)
-        {
-            return Regex.Replace(input, @"\s+", " ").TrimEnd();
         }
 
         private string JoinNonEmpty(string separator, params string?[] values)
@@ -874,8 +861,6 @@ namespace System.CommandLine.Help
             public override bool Equals(object obj) => Equals((HelpItem)obj);
 
             public override int GetHashCode() => (Invocation, Description).GetHashCode();
-
-            public bool HasDefaultValueHint => !string.IsNullOrWhiteSpace(DefaultValueHint);
         }
 
         private static class HelpSection

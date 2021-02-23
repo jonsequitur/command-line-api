@@ -34,10 +34,7 @@ namespace System.CommandLine
         /// <param name="name">The name of the argument.</param>
         public Argument(string name) 
         {
-            if (!string.IsNullOrWhiteSpace(name))
-            {
-                Name = name!;
-            }
+            Name = name;
         }
 
         internal HashSet<string>? AllowedValues { get; private set; }
@@ -204,7 +201,11 @@ namespace System.CommandLine
         /// </summary>
         public bool HasDefaultValue => _defaultValueFactory != null;
 
-        internal static Argument None => new Argument { Arity = ArgumentArity.Zero };
+        internal static Argument None => new Argument
+        {
+            Arity = ArgumentArity.Zero,
+            IsHidden = true
+        };
 
         internal void AddAllowedValues(IEnumerable<string> values)
         {
