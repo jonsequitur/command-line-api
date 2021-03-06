@@ -2,10 +2,8 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Collections.Generic;
-using System.CommandLine.Binding;
 using System.CommandLine.Invocation;
 using System.CommandLine.IO;
-using System.CommandLine.Parsing;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -16,167 +14,8 @@ using Xunit;
 
 namespace System.CommandLine.Tests.Binding
 {
-    public class ModelBindingCommandHandlerTests
+    public partial class ModelBindingCommandHandlerTests
     {
-        [Theory]
-        [InlineData(typeof(bool), "--value", true)]
-        [InlineData(typeof(bool), "--value false", false)]
-        [InlineData(typeof(string), "--value hello", "hello")]
-        [InlineData(typeof(int), "--value 123", 123)]
-        public async Task Option_arguments_are_bound_by_name_to_method_parameters(
-            Type type,
-            string commandLine,
-            object expectedValue)
-        {
-            var targetType = typeof(ClassWithMethodHavingParameter<>).MakeGenericType(type);
-
-            var handlerMethod = targetType.GetMethod(nameof(ClassWithMethodHavingParameter<int>.HandleAsync));
-
-            var handler = HandlerDescriptor.FromMethodInfo(handlerMethod)
-                                           .GetCommandHandler();
-
-            var command = new Command("the-command")
-                          {
-                              new Option("--value", argumentType: type)
-                          };
-
-            var console = new TestConsole();
-
-            await handler.InvokeAsync(
-                new InvocationContext(command.Parse(commandLine), console));
-
-            console.Out.ToString().Should().Be(expectedValue.ToString());
-        }
-
-        [Theory]
-        [InlineData(typeof(bool), "--value", true)]
-        [InlineData(typeof(bool), "--value false", false)]
-        [InlineData(typeof(string), "--value hello", "hello")]
-        [InlineData(typeof(int), "--value 123", 123)]
-        public async Task Option_arguments_are_bound_by_name_to_the_properties_of_method_parameters(
-            Type type,
-            string commandLine,
-            object expectedValue)
-        {
-            var complexParameterType = typeof(ClassWithSetter<>).MakeGenericType(type);
-
-            var handlerType = typeof(ClassWithMethodHavingParameter<>).MakeGenericType(complexParameterType);
-
-            var handlerMethod = handlerType.GetMethod("HandleAsync");
-
-            var handler = HandlerDescriptor.FromMethodInfo(handlerMethod)
-                                           .GetCommandHandler();
-
-            var command = new Command("the-command")
-                          {
-                              new Option("--value", argumentType: type)
-                          };
-
-            var console = new TestConsole();
-
-            await handler.InvokeAsync(
-                new InvocationContext(command.Parse(commandLine), console));
-
-            console.Out.ToString().Should().Be($"ClassWithSetter<{type.Name}>: {expectedValue}");
-        }
-
-        [Theory]
-        [InlineData(typeof(bool), "--value", true)]
-        [InlineData(typeof(bool), "--value false", false)]
-        [InlineData(typeof(string), "--value hello", "hello")]
-        [InlineData(typeof(int), "--value 123", 123)]
-        public async Task Option_arguments_are_bound_by_name_to_the_constructor_parameters_of_method_parameters(
-            Type type,
-            string commandLine,
-            object expectedValue)
-        {
-            var complexParameterType = typeof(ClassWithCtorParameter<>).MakeGenericType(type);
-
-            var handlerType = typeof(ClassWithMethodHavingParameter<>).MakeGenericType(complexParameterType);
-
-            var handlerMethod = handlerType.GetMethod("HandleAsync");
-
-            var handler = HandlerDescriptor.FromMethodInfo(handlerMethod)
-                                           .GetCommandHandler();
-
-            var command = new Command("the-command")
-                          {
-                              new Option("--value", argumentType: type)
-                          };
-
-            var console = new TestConsole();
-
-            await handler.InvokeAsync(
-                new InvocationContext(command.Parse(commandLine), console));
-
-            console.Out.ToString().Should().Be($"ClassWithCtorParameter<{type.Name}>: {expectedValue}");
-        }
-
-        [Theory]
-        [InlineData(typeof(string), "hello", "hello")]
-        [InlineData(typeof(int), "123", 123)]
-        public async Task Command_arguments_are_bound_by_name_to_handler_method_parameters(
-            Type type,
-            string commandLine,
-            object expectedValue)
-        {
-            var targetType = typeof(ClassWithMethodHavingParameter<>).MakeGenericType(type);
-
-            var handlerMethod = targetType.GetMethod(nameof(ClassWithMethodHavingParameter<int>.HandleAsync));
-
-            var handler = HandlerDescriptor.FromMethodInfo(handlerMethod)
-                                           .GetCommandHandler();
-
-            var command = new Command("the-command")
-            {
-                new Argument
-                {
-                    Name = "value",
-                    ArgumentType = type
-                }
-            };
-
-            var console = new TestConsole();
-
-            await handler.InvokeAsync(
-                new InvocationContext(command.Parse(commandLine), console));
-
-            console.Out.ToString().Should().Be(expectedValue.ToString());
-        }
-
-        [Theory]
-        [InlineData(typeof(string), "")]
-        [InlineData(typeof(FileInfo), null)]
-        [InlineData(typeof(int), 0)]
-        [InlineData(typeof(int?), null)]
-        public async Task Unspecified_option_arguments_with_no_default_value_are_bound_to_type_default(
-            Type parameterType,
-            object expectedValue)
-        {
-            var captureMethod = GetType()
-                                .GetMethod(nameof(CaptureMethod), BindingFlags.NonPublic | BindingFlags.Static)
-                                .MakeGenericMethod(parameterType);
-
-            var handler = CommandHandler.Create(captureMethod);
-
-            var command = new Command("command")
-                          {
-                              new Option("-x", argumentType: parameterType)
-                          };
-
-            command.Handler = handler;
-
-            var parseResult = command.Parse("");
-
-            var invocationContext = new InvocationContext(parseResult);
-
-            await handler.InvokeAsync(invocationContext);
-
-            var boundValue = ((BoundValueCapturer)invocationContext.InvocationResult).BoundValue;
-
-            boundValue.Should().Be(expectedValue);
-        }
-
         [Fact]
         public async Task When_argument_type_is_not_known_until_binding_then_bool_parameter_is_bound_correctly()
         {
@@ -212,27 +51,37 @@ namespace System.CommandLine.Tests.Binding
 
             received.Should().Be(123);
         }
-
-        [Fact]
-        public void When_argument_type_is_more_specific_than_parameter_type_then_parameter_is_bound_correctly()
+        [Theory]
+        [InlineData(typeof(string), "")]
+        [InlineData(typeof(FileInfo), null)]
+        [InlineData(typeof(int), 0)]
+        [InlineData(typeof(int?), null)]
+        public async Task Unspecified_option_arguments_with_no_default_value_are_bound_to_type_default(
+            Type parameterType,
+            object expectedValue)
         {
-            FileSystemInfo received = null;
+            var captureMethod = GetType()
+                                .GetMethod(nameof(CaptureMethod), BindingFlags.NonPublic | BindingFlags.Static)
+                                .MakeGenericMethod(parameterType);
 
-            var root = new RootCommand
-            {
-                new Option<DirectoryInfo>("-f")
-            };
-            root.Handler = CommandHandler.Create<FileSystemInfo>(f => received = f);
-            var path = $"{Directory.GetCurrentDirectory()}{Path.DirectorySeparatorChar}";
+            var handler = CommandHandler.Create(captureMethod);
 
-            root.Invoke($"-f {path}");
+            var command = new Command("command")
+                          {
+                              new Option("-x", argumentType: parameterType)
+                          };
 
-            received.Should()
-                    .BeOfType<DirectoryInfo>()
-                    .Which
-                    .FullName
-                    .Should()
-                    .Be(path);
+            command.Handler = handler;
+
+            var parseResult = command.Parse("");
+
+            var invocationContext = new InvocationContext(parseResult);
+
+            await handler.InvokeAsync(invocationContext);
+
+            var boundValue = ((BoundValueCapturer)invocationContext.InvocationResult).BoundValue;
+
+            boundValue.Should().Be(expectedValue);
         }
 
         [Theory]
@@ -490,46 +339,6 @@ namespace System.CommandLine.Tests.Binding
             boundValue.Should().BeOfType(c.ParameterType);
 
             c.AssertBoundValue(boundValue);
-        }
-        
-        [Fact]
-        public void EXPERIMENT()
-        {
-            var stringOption = new Option<string>("--string");
-            var intOption = new Option<int>("--int");
-            var filesArg = new Argument<FileInfo[]>();
-            var wasCalled = false;
-            var command = new RootCommand
-            {
-                stringOption,
-                intOption,
-                filesArg
-            };
-
-            command.Handler = CommandHandler.Create(
-                stringOption, intOption, filesArg,
-                (s, i, fs) =>
-                {
-                    wasCalled = true;
-            
-                    s.Should().Be("hello");
-                    i.Should().Be(123);
-                    fs.Select(f => f.Name)
-                      .Should()
-                      .BeEquivalentTo(
-                          "1.txt",
-                          "2.txt",
-                          "3.txt"
-                      );
-
-                    return Task.CompletedTask;
-                });
-
-            var parser = new Parser(command);
-
-            parser.Invoke("--int 123 --string hello 1.txt 2.txt 3.txt");
-
-            wasCalled.Should().BeTrue();
         }
 
         private static void CaptureMethod<T>(T value, InvocationContext invocationContext)
