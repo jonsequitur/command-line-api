@@ -1008,5 +1008,23 @@ namespace System.CommandLine.Tests.Binding
                   .Should()
                   .BeEmpty();
         }
+
+
+        [Fact]
+        public void WHAT_ABOUT_A_SEQUENCE_OF_NULLABLES()
+        {
+            // FIX: (JUST_CHECKING) VALID?
+            var argument = new Argument<int?[]>();
+            var command = new RootCommand
+            {
+                argument
+            };
+
+            var parseResult = command.Parse(new[] { "1", "", "2" });
+
+            var values = parseResult.GetValueForArgument(argument);
+
+            values.Should().BeEquivalentSequenceTo(1, null, 2);
+        }
     }
 }

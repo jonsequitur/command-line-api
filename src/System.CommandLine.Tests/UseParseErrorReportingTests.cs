@@ -5,6 +5,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.CommandLine.Parsing;
+using System.CommandLine.Tests.Utility;
 using FluentAssertions;
 using Xunit;
 
@@ -49,6 +50,36 @@ namespace System.CommandLine.Tests
             int result = parser.Invoke("");
 
             result.Should().Be(42);
+        }
+
+        [Fact]
+        public void Type_conversion_exceptions_do_not_show_detailed_exception_information_for_types_without_conversion_support()
+        {
+            // FIX: (Type_conversion_exceptions_do_not_show_detailed_exception_information_for_types_without_conversion_support) 
+            var argument = new Argument<CantParseThis>();
+            var root = new RootCommand
+            {
+                argument
+            };
+            root.SetHandler((CantParseThis o) =>
+            {
+                Console.WriteLine(o.ToString());
+            }, argument);
+
+            var parser = new CommandLineBuilder(root)
+                         .UseParseErrorReporting()
+                         .Build();
+
+            TestConsole console = new();
+            parser.Invoke("can't-parse-this", console);
+            
+            console.Out.ToString().Should().NotContain("Exception");
+            console.Error.ToString().Should().NotContain("Exception");
+        }
+
+        public record struct CantParseThis
+        {
+            public int Value;
         }
     }
 }
