@@ -68,11 +68,10 @@ namespace System.CommandLine.Tests
             var command = new Command("child");
             var rootCommand = new RootCommand { command };
             command.SetHandler(() => { });
-            var requiredOption = new Option<bool>("--i-must-be-set")
+            rootCommand.AddGlobalOption(new Option<bool>("--i-must-be-set")
             {
                 IsRequired = true
-            };
-            rootCommand.AddGlobalOption(requiredOption);
+            });
 
             var result = rootCommand.Parse("child --i-must-be-set");
 
@@ -119,6 +118,68 @@ namespace System.CommandLine.Tests
             firstChild.Parse("second --global 123").GetValueForOption(option).Should().Be(123);
             
             secondChild.Parse("--global 123").GetValueForOption(option).Should().Be(123);
+        }
+
+        [Fact]
+        public void Global_options_on_child_commands_take_precedence_over_global_options_on_parent_commands()
+        {
+            var child = new Command("child");
+
+            var parent = new RootCommand
+            {
+                child
+            };
+
+            var parentOption = new Option<string>("-x");
+            parent.AddGlobalOption(parentOption);
+            var childOption = new Option<string>("-x");
+            child.AddGlobalOption(childOption);
+
+            parent.Invoking(p => new CommandLineConfiguration(p).ThrowIfInvalid()).Should().NotThrow();
+
+            var resultWhenPassingParentOption = parent.Parse("-x hello-parent");
+
+            resultWhenPassingParentOption.GetValueForOption(parentOption).Should().Be("hello-parent");
+            resultWhenPassingParentOption.GetValueForOption(childOption).Should().BeNull();
+
+            var resultWhenPassingChildOption = parent.Parse("child -x hello-child");
+
+            resultWhenPassingChildOption.GetValueForOption(childOption).Should().Be("hello-child");
+            resultWhenPassingChildOption.GetValueForOption(parentOption).Should().BeNull();
+
+            var resultWhenPassingBoth = parent.Parse("-x hello-parent child -x hello-child");
+
+            resultWhenPassingBoth.GetValueForOption(childOption).Should().Be("hello-child");
+            resultWhenPassingBoth.GetValueForOption(parentOption).Should().Be("hello-parent");
+        }
+
+        [Fact]
+        public void Specific_aliases_on_options_on_child_commands_can_override_global_options_sharing_only_that_alias()
+        {
+            var child = new Command("child");
+
+            var parent = new RootCommand
+            {
+                child
+            };
+
+            var globalOption = new Option<string>("--dupe");
+            parent.AddGlobalOption(globalOption);
+            var childOption = new Option<string>(new[] { "--dupe", "--different" });
+            child.AddOption(childOption);
+
+            parent.Parse("--dupe hello-parent").GetValueForOption(globalOption).Should().Be("hello-parent");
+            parent.Parse("child --dupe hello-child").GetValueForOption(childOption).Should().Be("hello-child");
+            parent.Parse("child --different hello-child").GetValueForOption(childOption).Should().Be("hello-child");
+        }
+
+        [Fact]
+        public void When_global_option_is_declared_on_the_same_command_as_local_option_then_______()
+        {
+            
+
+            // TODO (When_global_option_is_declared_on_the_same_command_as_local_option_then_______) write test
+            throw new NotImplementedException();
         }
     }
 }
