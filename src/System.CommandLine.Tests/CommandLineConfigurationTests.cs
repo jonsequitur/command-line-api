@@ -189,23 +189,7 @@ public class CommandLineConfigurationTests
                 .Should()
                 .Be($"Duplicate alias '--dupe' found on command '{command.Name}'.");
     }
-
-    [Fact]
-    public void Global_options_may_be_added_with_aliases_that_conflict_with_local_options()
-    {
-        var command = new Command("the-command")
-        {
-            new Option<string>("--same")
-        };
-
-        command
-            .Invoking(c => c.AddGlobalOption(new Option<int>("--same")))
-            .Should()
-            .NotThrow<ArgumentException>();
-
-        new CommandLineConfiguration(command).ThrowIfInvalid();
-    }
-
+    
     [Fact]
     public void ThrowIfInvalid_does_not_throw_if_global_option_alias_is_the_same_as_local_option_alias()
     {

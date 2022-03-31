@@ -176,10 +176,21 @@ namespace System.CommandLine.Tests
         [Fact]
         public void When_global_option_is_declared_on_the_same_command_as_local_option_then_______()
         {
-            
+            // FIX: is this a valid scenario?
 
-            // TODO (When_global_option_is_declared_on_the_same_command_as_local_option_then_______) write test
-            throw new NotImplementedException();
+            var command = new Command("the-command")
+            {
+                new Option<string>("--same")
+            };
+
+            command
+                .Invoking(c => c.AddGlobalOption(new Option<int>("--same")))
+                .Should()
+                .NotThrow<ArgumentException>();
+
+            command
+                .Invoking(c => new CommandLineConfiguration(c).ThrowIfInvalid()).Should()
+                .NotThrow();
         }
     }
 }
