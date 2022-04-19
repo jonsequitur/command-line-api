@@ -3,6 +3,7 @@
 
 using System.Collections.Generic;
 using System.CommandLine.Invocation;
+using System.CommandLine.IO;
 using System.CommandLine.Parsing;
 using System.CommandLine.Tests.Binding;
 using System.CommandLine.Utility;
