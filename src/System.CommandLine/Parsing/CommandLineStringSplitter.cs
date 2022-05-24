@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Collections.Generic;
+using System.Text;
 
 namespace System.CommandLine.Parsing
 {
@@ -27,6 +28,70 @@ namespace System.CommandLine.Parsing
             QuoteEnd
         }
 
+        public IEnumerable<string> Split2(string commandLine)
+        {
+            // FIX: (Split2) from https://stackoverflow.com/questions/298830/split-string-containing-command-line-parameters-into-string-in-c-sharp
+            var result = new StringBuilder();
+
+            var quoted = false;
+            var escaped = false;
+            var started = false;
+            var allowcaret = false;
+            for (int i = 0; i < commandLine.Length; i++)
+            {
+                var chr = commandLine[i];
+
+                if (chr == '^' && !quoted)
+                {
+                    if (allowcaret)
+                    {
+                        result.Append(chr);
+                        started = true;
+                        escaped = false;
+                        allowcaret = false;
+                    }
+                    else if (i + 1 < commandLine.Length && commandLine[i + 1] == '^')
+                    {
+                        allowcaret = true;
+                    }
+                    else if (i + 1 == commandLine.Length)
+                    {
+                        result.Append(chr);
+                        started = true;
+                        escaped = false;
+                    }
+                }
+                else if (escaped)
+                {
+                    result.Append(chr);
+                    started = true;
+                    escaped = false;
+                }
+                else if (chr == '"')
+                {
+                    quoted = !quoted;
+                    started = true;
+                }
+                else if (chr == '\\' && i + 1 < commandLine.Length && commandLine[i + 1] == '"')
+                {
+                    escaped = true;
+                }
+                else if (chr == ' ' && !quoted)
+                {
+                    if (started) yield return result.ToString();
+                    result.Clear();
+                    started = false;
+                }
+                else
+                {
+                    result.Append(chr);
+                    started = true;
+                }
+            }
+
+            if (started) yield return result.ToString();
+        }
+        
         /// <summary>
         /// Splits a string into a sequence of strings based on whitespace and quotation marks.
         /// </summary>

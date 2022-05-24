@@ -185,7 +185,7 @@ public class TokenReplacementTests
                          return true;
                      })
                      .Build();
-
+            
         var result = parser.Parse("@replace-me");
 
         result.Errors.Should().BeEmpty();
@@ -214,5 +214,36 @@ public class TokenReplacementTests
         result.Errors.Should().BeEmpty();
 
         result.GetValueForArgument(argument).Should().BeEmpty();
+    }
+
+    [Fact]
+    public void Token_replacer_is_recursive_if_replacement_tokens_also_begin_with_at_symbol()
+    {
+        var argument = new Argument<string[]>();
+
+        var command = new RootCommand { argument };
+
+        var parser = new CommandLineBuilder(command)
+                     .UseTokenReplacer((string tokenToReplace, out IReadOnlyList<string> tokens, out string message) =>
+                     {
+                         if (tokenToReplace == "one")
+                         {
+                             tokens = new[] { "@two" };
+                         }
+                         else
+                         {
+                             tokens = new[] { "three" };
+                         }
+
+                         message = null;
+                         return true;
+                     })
+                     .Build();
+
+        var result = parser.Parse("@one");
+
+        result.Errors.Should().BeEmpty();
+
+        result.GetValueForArgument(argument).Should().BeEquivalentTo(new[] { "three" });
     }
 }

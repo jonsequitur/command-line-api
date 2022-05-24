@@ -14,7 +14,7 @@ namespace System.CommandLine.Tests
 {
     public class CommandExtensionsTests
     {
-        private ITestOutputHelper _output;
+        private readonly ITestOutputHelper _output;
 
         public CommandExtensionsTests(ITestOutputHelper output)
         {
