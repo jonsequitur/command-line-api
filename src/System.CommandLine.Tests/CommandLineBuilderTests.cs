@@ -5,6 +5,7 @@ using System.CommandLine.Builder;
 using System.CommandLine.Help;
 using System.CommandLine.IO;
 using System.CommandLine.Parsing;
+using System.Linq;
 using FluentAssertions;
 using Xunit;
 
