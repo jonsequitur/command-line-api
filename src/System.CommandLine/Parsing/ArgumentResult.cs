@@ -58,7 +58,7 @@ namespace System.CommandLine.Parsing
             {
                 throw new ArgumentOutOfRangeException(nameof(numberOfTokens), numberOfTokens, "Value must be at least 1.");
             }
-
+            
             if (PassedOnTokens is { })
             {
                 throw new InvalidOperationException($"{nameof(OnlyTake)} can only be called once.");

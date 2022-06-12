@@ -7,6 +7,7 @@ using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Threading;
 using FluentAssertions;
 using Xunit;
 using Xunit.Abstractions;
@@ -98,7 +99,7 @@ namespace System.CommandLine.Tests
         public void Actual_behavior_of_CommandLineToArgvW(string input, string[] expectedOutput)
         {
             var output = CommandLineToArgs(input);
-
+            
             output.Should().BeEquivalentTo(expectedOutput, c => c.WithStrictOrdering());
         }
         
@@ -113,7 +114,7 @@ namespace System.CommandLine.Tests
             {
                 throw new Win32Exception();
             }
-
+            
             try
             {
                 var args = new string[argc];

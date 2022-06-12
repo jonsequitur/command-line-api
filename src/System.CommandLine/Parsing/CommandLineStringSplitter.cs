@@ -104,7 +104,7 @@ namespace System.CommandLine.Parsing
             var startTokenIndex = 0;
 
             var pos = 0;
-
+            
             var seeking = Boundary.TokenStart;
             var seekingQuote = Boundary.QuoteStart;
 
