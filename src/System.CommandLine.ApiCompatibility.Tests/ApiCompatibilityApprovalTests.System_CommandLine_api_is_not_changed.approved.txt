@@ -57,25 +57,6 @@ System.CommandLine
     public System.Void SetAction(System.Func<System.CommandLine.Invocation.InvocationContext,System.Int32> action)
     public System.Void SetAction(System.Func<System.CommandLine.Invocation.InvocationContext,System.Threading.CancellationToken,System.Threading.Tasks.Task> action)
     public System.Void SetAction(System.Func<System.CommandLine.Invocation.InvocationContext,System.Threading.CancellationToken,System.Threading.Tasks.Task<System.Int32>> action)
-  public class CommandLineBuilder
-    .ctor(Command rootCommand)
-    public Command Command { get; }
-    public System.Collections.Generic.List<Directive> Directives { get; }
-    public CommandLineConfiguration Build()
-    public CommandLineBuilder CancelOnProcessTermination(System.Nullable<System.TimeSpan> timeout = null)
-    public CommandLineBuilder EnablePosixBundling(System.Boolean value = True)
-    public CommandLineBuilder UseDefaults()
-    public CommandLineBuilder UseEnvironmentVariableDirective()
-    public CommandLineBuilder UseExceptionHandler(System.Func<System.Exception,System.CommandLine.Invocation.InvocationContext,System.Int32> onException = null, System.Int32 errorExitCode = 1)
-    public CommandLineBuilder UseHelp(System.Nullable<System.Int32> maxWidth = null)
-    public CommandLineBuilder UseHelp(System.String name, System.String[] helpAliases)
-    public CommandLineBuilder UseParseDirective(System.Int32 errorExitCode = 1)
-    public CommandLineBuilder UseParseErrorReporting(System.Int32 errorExitCode = 1)
-    public CommandLineBuilder UseSuggestDirective()
-    public CommandLineBuilder UseTokenReplacer(System.CommandLine.Parsing.TryReplaceToken replaceToken)
-    public CommandLineBuilder UseTypoCorrections(System.Int32 maxLevenshteinDistance = 3)
-    public CommandLineBuilder UseVersionOption()
-    public CommandLineBuilder UseVersionOption(System.String name, System.String[] aliases)
   public class CommandLineConfiguration
     .ctor(Command rootCommand)
     public System.Collections.Generic.List<Directive> Directives { get; }
