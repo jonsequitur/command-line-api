@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System.CommandLine.Parsing;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -128,6 +129,7 @@ namespace System.CommandLine.Tests
 
         [Theory]
         [InlineData("--version -x")]
+        [InlineData("-x --version")]
         [InlineData("--version subcommand")]
         public void Version_is_not_valid_with_other_tokens(string commandLine)
         {
@@ -139,8 +141,6 @@ namespace System.CommandLine.Tests
                 new Option<bool>("-x")
             };
             rootCommand.SetAction(_ => { });
-
-            var output = new StringWriter();
 
             var result = rootCommand.Parse(commandLine);
 
@@ -201,6 +201,57 @@ namespace System.CommandLine.Tests
             var result = rootCommand.Parse("-v subcommand");
 
             result.Errors.Should().ContainSingle(e => e.Message == "-v option cannot be combined with other arguments.");
+        }
+
+        [Fact]
+        public void Version_is_not_valid_with_other_options()
+        {
+            var childCommand = new Command("subcommand");
+            childCommand.SetAction(_ => { });
+            var rootCommand = new RootCommand
+            {
+                childCommand
+            };  
+
+            rootCommand.Options.Clear();
+            rootCommand.Add(new VersionOption("-v"));
+
+            rootCommand.SetAction(_ => { });
+
+            var result = rootCommand.Parse("-v subcommand");
+
+            result.Errors.Should().ContainSingle(e => e.Message == "-v option cannot be combined with other arguments.");
+        }
+
+        [Fact] // https://github.com/dotnet/command-line-api/issues/2664
+        public void VersionOption_does_not_suppress_missing_required_option_error_on_another_option()
+        {
+            var option = new Option<string>("--option1")
+            {
+                Description = "Test option `",
+                Required = true,
+            };
+            var rootCommand = new RootCommand("Test Root")
+            {
+                option,
+            };
+
+            var result = rootCommand.Parse(["--FooBar", "--version"]);
+
+            result.Errors
+                  .Select(e => e.SymbolResult)
+                  .OfType<OptionResult>()
+                  .Should().Contain(r => r.Option == option);
+        }
+
+        [Fact]
+        public void VersionOption_does_not_suppress_unrecognized_option_error()
+        {
+            var rootCommand = new RootCommand("Test Root");
+
+            var result = rootCommand.Parse(["--nonexistent", "--version"]);
+
+            result.Errors.Count.Should().BeGreaterThan(0);
         }
     }
 }
