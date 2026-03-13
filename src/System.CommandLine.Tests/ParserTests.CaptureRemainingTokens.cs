@@ -256,6 +256,47 @@ namespace System.CommandLine.Tests
                 result.GetValue(toolArgs).Should().BeEquivalentSequenceTo("foo", "--unknown");
                 result.Errors.Should().BeEmpty();
             }
+
+            [Fact]
+            public void Scalar_capture_escapes_one_token_then_resumes_normal_parsing()
+            {
+                var verbose = new Option<bool>("--verbose");
+                var first = new Argument<string>("first");
+                var target = new Argument<string>("target") { CaptureRemainingTokens = true };
+                var command = new RootCommand
+                {
+                    verbose,
+                    first,
+                    target
+                };
+
+                var result = command.Parse("foo --verbose --verbose");
+
+                using var _ = new AssertionScope();
+                result.GetValue(first).Should().Be("foo");
+                result.GetValue(target).Should().Be("--verbose");
+                result.GetValue(verbose).Should().BeTrue();
+                result.Errors.Should().BeEmpty();
+            }
+
+            [Fact]
+            public void Options_after_scalar_capture_overflow_are_parsed_normally()
+            {
+                var verbose = new Option<bool>("--verbose");
+                var target = new Argument<string>("target") { CaptureRemainingTokens = true };
+                var command = new RootCommand
+                {
+                    verbose,
+                    target
+                };
+
+                var result = command.Parse("hello --verbose");
+
+                using var _ = new AssertionScope();
+                result.GetValue(target).Should().Be("hello");
+                result.GetValue(verbose).Should().BeTrue();
+                result.Errors.Should().BeEmpty();
+            }
         }
     }
 }

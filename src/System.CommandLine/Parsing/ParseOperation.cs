@@ -194,6 +194,13 @@ namespace System.CommandLine.Parsing
 
                 if (currentArgumentCount == 0) // no matching arguments found
                 {
+                    if (captureRemaining)
+                    {
+                        // Return to ParseCommandChildren so that overflow tokens
+                        // are dispatched normally (e.g. as options or subcommands).
+                        break;
+                    }
+
                     AddCurrentTokenToUnmatched();
                     Advance();
                 }
