@@ -44,14 +44,14 @@ namespace System.CommandLine.Invocation
                         return syncAction.Invoke(parseResult);
 
                     case AsynchronousCommandLineAction asyncAction:
-                        var startedInvocation = asyncAction.InvokeAsync(parseResult, cts.Token);
-
                         var timeout = parseResult.InvocationConfiguration.ProcessTerminationTimeout;
 
                         if (timeout.HasValue)
                         {
-                            terminationHandler = new(cts, startedInvocation, timeout.Value);
+                            terminationHandler = new(cts, timeout.Value);
                         }
+
+                        var startedInvocation = asyncAction.InvokeAsync(parseResult, cts.Token);
 
                         if (terminationHandler is null)
                         {
@@ -59,6 +59,7 @@ namespace System.CommandLine.Invocation
                         }
                         else
                         {
+                            terminationHandler.StartedHandler = startedInvocation;
                             // Handlers may not implement cancellation.
                             // In such cases, when CancelOnProcessTermination is configured and user presses Ctrl+C,
                             // ProcessTerminationCompletionSource completes first, with the result equal to native exit code for given signal.
