@@ -139,6 +139,7 @@
     public static System.String ExecutablePath { get; }
     .ctor(System.String description = )
     public System.Collections.Generic.IList<Directive> Directives { get; }
+    public System.String HelpName { get; set; }
     public System.Void Add(Directive directive)
   public abstract class Symbol
     public System.String Description { get; set; }
