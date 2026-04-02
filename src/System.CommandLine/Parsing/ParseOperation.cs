@@ -333,7 +333,7 @@ namespace System.CommandLine.Parsing
         }
 
         private void AddPreAction(CommandLineAction action)
-        {   
+        {
             if (_preActions is null)
             {
                 _preActions = new();
