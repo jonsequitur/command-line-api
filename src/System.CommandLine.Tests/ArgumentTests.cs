@@ -121,11 +121,14 @@ public class ArgumentTests
 
         var result = command.Parse("run name1");
 
+        using var _ = new AssertionScope();
+
         result.Errors.Should().BeEmpty();
+        result.GetValue(argument).Should().Be("name1");
     }
 
     [Fact]
-    public void AcceptOnlyFromAmong_with_comparer_rejects_invalid_values()
+    public void AcceptOnlyFromAmong_with_case_insensitive_comparer_rejects_values_outside_the_accepted_set()
     {
         var argument = new Argument<string>("name");
         argument.AcceptOnlyFromAmong(StringComparer.OrdinalIgnoreCase, "NAME1", "NAME2");
@@ -140,6 +143,25 @@ public class ArgumentTests
         result.Errors
               .Select(e => e.Message)
               .Should()
-              .BeEquivalentTo(new[] { $"Argument 'NAME3' not recognized. Must be one of:\n\t'NAME1'\n\t'NAME2'" });
+              .BeEquivalentTo(["Argument 'NAME3' not recognized. Must be one of:\n\t'NAME1'\n\t'NAME2'"]);
+    }
+    
+        [Fact]
+    public void AcceptOnlyFromAmong_with_case_comparer_rejects_values_outside_the_accepted_case()
+    {
+        var argument = new Argument<string>("name");
+        argument.AcceptOnlyFromAmong(StringComparer.Ordinal, "NAME1", "NAME2");
+
+        Command command = new("run")
+        {
+            argument
+        };
+
+        var result = command.Parse("run name2");
+
+        result.Errors
+              .Select(e => e.Message)
+              .Should()
+              .BeEquivalentTo(["Argument 'name2' not recognized. Must be one of:\n\t'NAME1'\n\t'NAME2'"]);
     }
 }

@@ -416,7 +416,10 @@ namespace System.CommandLine.Tests
 
             var result = new RootCommand { option }.Parse("--name name1");
 
+            using var _ = new AssertionScope();
+
             result.Errors.Should().BeEmpty();
+            result.GetValue(option).Should().Be("name1");
         }
 
         [Fact]
