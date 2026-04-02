@@ -379,6 +379,18 @@ namespace System.CommandLine.Parsing
             _preActions.Add(action);
         }
 
+        private void AddPreActionsForImplicitOptions()
+        {
+            foreach (var kvp in _symbolResultTree)
+            {
+                if (kvp is { Key: Option { Action: { Terminating: false } action }, Value: OptionResult { Implicit: true } } && 
+                    _primaryAction != action)
+                {
+                    AddPreAction(action);
+                }
+            }
+        }
+
         private void AddCurrentTokenToUnmatched()
         {
             if (CurrentToken.Type == TokenType.DoubleDash)
@@ -472,6 +484,8 @@ namespace System.CommandLine.Parsing
                     }
                 }
             }
+
+            AddPreActionsForImplicitOptions();
         }
     }
 }
