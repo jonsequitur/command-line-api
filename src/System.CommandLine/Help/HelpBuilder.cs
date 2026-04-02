@@ -135,7 +135,7 @@ namespace System.CommandLine.Help
                         displayOptionTitle = parentCommand.Options.Any(x => x.Recursive && !x.Hidden);
                     }
 
-                    yield return parentCommand.Name;
+                    yield return (parentCommand is RootCommand root ? root.HelpName : null) ?? parentCommand.Name;
 
                     if (parentCommand.Arguments.Any())
                     {
