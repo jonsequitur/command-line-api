@@ -15,41 +15,38 @@ namespace System.CommandLine.Invocation
 
             try
             {
-                int exitCode = 0;
+                int actionResult = 0;
+                int preActionResult = 0;
 
                 if (parseResult.PreActions is not null)
                 {
                     for (int i = 0; i < parseResult.PreActions.Count; i++)
                     {
                         var action = parseResult.PreActions[i];
-                        int preActionResult;
+                        var result = 0;
 
                         switch (action)
                         {
                             case SynchronousCommandLineAction syncAction:
-                                preActionResult = syncAction.Invoke(parseResult);
+                                result = syncAction.Invoke(parseResult);
                                 break;
                             case AsynchronousCommandLineAction asyncAction:
-                                preActionResult = await asyncAction.InvokeAsync(parseResult, cts.Token);
+                                result = await asyncAction.InvokeAsync(parseResult, cts.Token);
                                 break;
-                            default:
-                                preActionResult = 0;
-                                break;
+                           
                         }
 
-                        if (exitCode == 0)
+                        if (result != 0)
                         {
-                            exitCode = preActionResult;
+                            preActionResult = result;
                         }
                     }
                 }
 
                 if (parseResult.Action is null)
                 {
-                    return exitCode != 0 ? exitCode : ReturnCodeForMissingAction(parseResult);
+                    return preActionResult != 0 ? preActionResult : ReturnCodeForMissingAction(parseResult);
                 }
-
-                int actionResult;
 
                 switch (parseResult.Action)
                 {
@@ -85,7 +82,7 @@ namespace System.CommandLine.Invocation
                         throw new ArgumentOutOfRangeException(nameof(parseResult.Action));
                 }
 
-                return exitCode != 0 ? exitCode : actionResult;
+                return preActionResult != 0 ? preActionResult : actionResult;
             }
             catch (Exception ex) when (parseResult.InvocationConfiguration.EnableDefaultExceptionHandler)
             {
@@ -101,32 +98,19 @@ namespace System.CommandLine.Invocation
         {
             try
             {
-                int exitCode = 0;
+                int preActionResult = 0;
 
                 if (parseResult.PreActions is not null)
                 {
-#if DEBUG
-                    for (var i = 0; i < parseResult.PreActions.Count; i++)
-                    {
-                        var action = parseResult.PreActions[i];
-
-                        if (action is not SynchronousCommandLineAction)
-                        {
-                            parseResult.InvocationConfiguration.EnableDefaultExceptionHandler = false;
-                            throw new Exception(
-                                $"This should not happen. An instance of {nameof(AsynchronousCommandLineAction)} ({action}) was called within {nameof(InvocationPipeline)}.{nameof(Invoke)}. This is supposed to be detected earlier resulting in a call to {nameof(InvocationPipeline)}{nameof(InvokeAsync)}");
-                        }
-                    }
-#endif
-
                     for (var i = 0; i < parseResult.PreActions.Count; i++)
                     {
                         if (parseResult.PreActions[i] is SynchronousCommandLineAction syncPreAction)
                         {
-                            int preActionResult = syncPreAction.Invoke(parseResult);
-                            if (exitCode == 0)
+                            int result = syncPreAction.Invoke(parseResult);
+                            
+                            if (result != 0)
                             {
-                                exitCode = preActionResult;
+                                preActionResult = result;
                             }
                         }
                     }
@@ -135,11 +119,11 @@ namespace System.CommandLine.Invocation
                 switch (parseResult.Action)
                 {
                     case null:
-                        return exitCode != 0 ? exitCode : ReturnCodeForMissingAction(parseResult);
+                        return preActionResult != 0 ? preActionResult : ReturnCodeForMissingAction(parseResult);
 
                     case SynchronousCommandLineAction syncAction:
                         int actionResult = syncAction.Invoke(parseResult);
-                        return exitCode != 0 ? exitCode : actionResult;
+                        return preActionResult != 0 ? preActionResult : actionResult;
 
                     default:
                         throw new InvalidOperationException($"{nameof(AsynchronousCommandLineAction)} called within non-async invocation.");
