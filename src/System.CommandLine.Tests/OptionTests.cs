@@ -409,6 +409,34 @@ namespace System.CommandLine.Tests
         }
 
         [Fact]
+        public void AcceptOnlyFromAmong_with_comparer_is_case_insensitive()
+        {
+            Option<string> option = new("--name");
+            option.AcceptOnlyFromAmong(StringComparer.OrdinalIgnoreCase, "NAME1", "NAME2");
+
+            var result = new RootCommand { option }.Parse("--name name1");
+
+            using var _ = new AssertionScope();
+
+            result.Errors.Should().BeEmpty();
+            result.GetValue(option).Should().Be("name1");
+        }
+
+        [Fact]
+        public void AcceptOnlyFromAmong_with_comparer_rejects_invalid_values()
+        {
+            Option<string> option = new("--name");
+            option.AcceptOnlyFromAmong(StringComparer.OrdinalIgnoreCase, "NAME1", "NAME2");
+
+            var result = new RootCommand { option }.Parse("--name NAME3");
+
+            result.Errors
+                  .Select(e => e.Message)
+                  .Should()
+                  .BeEquivalentTo(new[] { $"Argument 'NAME3' not recognized. Must be one of:\n\t'NAME1'\n\t'NAME2'" });
+        }
+
+        [Fact]
         public void Option_result_provides_identifier_token_if_name_was_provided()
         {
             var option = new Option<int>("--name")

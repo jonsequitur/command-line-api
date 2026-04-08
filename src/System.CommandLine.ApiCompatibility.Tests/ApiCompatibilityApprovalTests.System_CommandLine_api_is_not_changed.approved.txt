@@ -36,6 +36,7 @@
     public static Argument<T> AcceptLegalFileNamesOnly<T>(this Argument<T> argument)
     public static Argument<T> AcceptLegalFilePathsOnly<T>(this Argument<T> argument)
     public static Argument<T> AcceptOnlyFromAmong<T>(this Argument<T> argument, System.String[] values)
+    public static Argument<T> AcceptOnlyFromAmong<T>(this Argument<T> argument, System.StringComparer comparer, System.String[] values)
   public class Command : Symbol, System.Collections.IEnumerable
     .ctor(System.String name, System.String description = null)
     public System.CommandLine.Invocation.CommandLineAction Action { get; set; }
@@ -100,6 +101,7 @@
     public Option<T> AcceptLegalFileNamesOnly()
     public Option<T> AcceptLegalFilePathsOnly()
     public Option<T> AcceptOnlyFromAmong(System.String[] values)
+    public Option<T> AcceptOnlyFromAmong(System.StringComparer comparer, System.String[] values)
   public static class OptionValidation
     public static Option<System.IO.FileInfo> AcceptExistingOnly(this Option<System.IO.FileInfo> option)
     public static Option<System.IO.DirectoryInfo> AcceptExistingOnly(this Option<System.IO.DirectoryInfo> option)
